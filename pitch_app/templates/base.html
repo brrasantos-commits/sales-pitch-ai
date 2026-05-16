@@ -623,6 +623,9 @@
             {% endif %}
 
             {% if request.session.get("user_role") == "admin" %}
+            <a class="{% if request.url.path.startswith('/admin/prompts') %}active{% endif %}"
+              href="/admin/prompts">🤖 Prompts de IA</a>
+
             <a class="{% if request.url.path.startswith('/admin/dashboard') %}active{% endif %}"
               href="/admin/dashboard">📊 Dashboard</a>
             {% endif %}

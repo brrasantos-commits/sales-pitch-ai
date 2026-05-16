@@ -16,6 +16,12 @@ from openai import OpenAI
 from pitch_app.db import SessionLocal
 from pitch_app.services.material_processing_service import process_material_on_upload
 from pitch_app.services.config import MATERIALS_DIR, VIDEO_MATERIAL_EXTENSIONS
+from pitch_app.services.prompt_service import (
+    ensure_ai_prompts_table,
+    list_ai_prompts,
+    reset_ai_prompt,
+    update_ai_prompt,
+)
 
 
 from fastapi import Request, Form, Depends
@@ -1345,6 +1351,45 @@ def delete_filtro(
         db.close()
 
     return RedirectResponse(url="/admin/filtros", status_code=303)
+
+
+@router.get("/prompts", response_class=HTMLResponse)
+def admin_prompts(request: Request, saved: str = "", reset: str = ""):
+    _admin_only(request)
+    prompts = list_ai_prompts()
+
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "admin_prompts.html",
+        {
+            "request": request,
+            "prompts": prompts,
+            "saved": saved == "1",
+            "reset": reset == "1",
+        },
+    )
+
+
+@router.post("/prompts/{prompt_key}/edit")
+def update_prompt(
+    request: Request,
+    prompt_key: str,
+    content: str = Form(...),
+):
+    _admin_only(request)
+    ensure_ai_prompts_table()
+    update_ai_prompt(prompt_key, content)
+
+    return RedirectResponse(url="/admin/prompts?saved=1", status_code=303)
+
+
+@router.post("/prompts/{prompt_key}/reset")
+def reset_prompt(request: Request, prompt_key: str):
+    _admin_only(request)
+    ensure_ai_prompts_table()
+    reset_ai_prompt(prompt_key)
+
+    return RedirectResponse(url="/admin/prompts?reset=1", status_code=303)
 
 @router.post("/materials/bulk-discard")
 async def discard_bulk_materials(request: Request):

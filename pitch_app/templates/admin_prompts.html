@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Prompts de IA | Admin{% endblock %}
+
+{% block content %}
+<section class="page-card">
+  <div class="hero-block">
+    <div>
+      <h2>Prompts de IA</h2>
+      <p>Edite as instruções usadas nas avaliações, no chat de estudo e no roleplay.</p>
+    </div>
+  </div>
+
+  {% if saved %}
+  <div class="panel-card" style="border-left:4px solid #10b981; margin-bottom:16px;">
+    Prompt atualizado com sucesso.
+  </div>
+  {% endif %}
+
+  {% if reset %}
+  <div class="panel-card" style="border-left:4px solid #2563eb; margin-bottom:16px;">
+    Prompt restaurado para o padrão.
+  </div>
+  {% endif %}
+
+  <div style="display:grid; gap:18px;">
+    {% for prompt in prompts %}
+    <article class="panel-card" id="{{ prompt.key }}">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; margin-bottom:12px;">
+        <div>
+          <h3 style="margin-bottom:6px;">{{ prompt.title }}</h3>
+          <p style="margin:0; color:#64748b;">{{ prompt.description }}</p>
+        </div>
+
+        {% if prompt.is_custom %}
+        <span style="font-size:13px; color:#047857; font-weight:700;">Personalizado</span>
+        {% else %}
+        <span style="font-size:13px; color:#64748b; font-weight:700;">Padrão</span>
+        {% endif %}
+      </div>
+
+      <form method="post" action="/admin/prompts/{{ prompt.key }}/edit" style="display:grid; gap:12px;">
+        <textarea
+          name="content"
+          rows="14"
+          required
+          spellcheck="false"
+          style="width:100%; min-height:260px; font-family:Consolas, monospace; font-size:14px; line-height:1.45;"
+        >{{ prompt.content }}</textarea>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="primary-btn" type="submit">Salvar prompt</button>
+          <button
+            class="secondary-btn"
+            type="submit"
+            form="reset-{{ prompt.key }}"
+            onclick="return confirm('Restaurar este prompt para o texto padrão?');"
+          >
+            Restaurar padrão
+          </button>
+        </div>
+      </form>
+
+      <form id="reset-{{ prompt.key }}" method="post" action="/admin/prompts/{{ prompt.key }}/reset"></form>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

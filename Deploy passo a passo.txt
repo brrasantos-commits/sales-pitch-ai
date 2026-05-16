@@ -1,0 +1,149 @@
+Segue o passo a passo prático.
+
+## 1. Criar branch de testes no Git
+
+No PowerShell, dentro do projeto:
+
+```powershell
+git checkout main
+git pull origin main
+git checkout -b develop
+git push origin develop
+```
+
+## 2. Criar ambiente de testes no Railway
+
+No Railway:
+
+```text
+Project → Environments → New Environment
+```
+
+Crie:
+
+```text
+staging
+```
+
+Mantenha o atual como:
+
+```text
+production
+```
+
+## 3. Ligar cada ambiente a uma branch
+
+No Railway:
+
+```text
+production → branch main
+staging → branch develop
+```
+
+Assim:
+
+```text
+main = cliente / produção
+develop = testes / homologação
+```
+
+## 4. Separar as variáveis por ambiente
+
+Em cada environment, configure:
+
+### Production
+
+```text
+OPENAI_API_KEY=sua_chave_producao
+OPENAI_MODEL=gpt-4o-mini
+SESSION_SECRET_KEY=uma_chave_forte_producao
+SEED_ON_STARTUP=false
+```
+
+### Staging
+
+```text
+OPENAI_API_KEY=sua_chave_teste
+OPENAI_MODEL=gpt-4o-mini
+SESSION_SECRET_KEY=uma_chave_forte_staging
+SEED_ON_STARTUP=false
+```
+
+Importante: `SESSION_SECRET_KEY` deve ser diferente em cada ambiente.
+
+## 5. Criar volumes separados
+
+No Railway, para cada ambiente:
+
+```text
+Service → Volumes → Add Volume
+```
+
+Use o mesmo mount path:
+
+```text
+/data
+```
+
+Mas volumes separados:
+
+```text
+production volume ≠ staging volume
+```
+
+Nunca use o mesmo volume para os dois.
+
+## 6. Testar no staging
+
+Faça mudanças sempre na branch `develop`:
+
+```powershell
+git checkout develop
+git add .
+git commit -m "Ajuste check box na tela de perfil"
+git push origin develop
+```
+
+O Railway vai fazer deploy só no ambiente `staging`.
+
+## 7. Promover para produção
+
+Quando estiver tudo validado:
+
+```powershell
+git checkout main
+git pull origin main
+git merge develop
+git push origin main
+```
+
+Isso dispara deploy no ambiente `production`.
+
+## 8. Fluxo ideal daqui para frente
+
+```text
+Você desenvolve → develop
+Você testa → staging
+Cliente usa → production/main
+Aprovou → merge develop em main
+```
+
+## 9. Para não levar testes ao cliente
+
+Antes de entregar produção, limpe histórico:
+
+```python
+from pitch_app.db import SessionLocal
+from sqlalchemy import text
+
+db = SessionLocal()
+db.execute(text("DELETE FROM pitch_evaluations"))
+db.execute(text("DELETE FROM sqlite_sequence WHERE name='pitch_evaluations'"))
+db.commit()
+db.close()
+
+print("Histórico limpo.")
+```
+
+E mantenha materiais reais somente no ambiente `production`.
+

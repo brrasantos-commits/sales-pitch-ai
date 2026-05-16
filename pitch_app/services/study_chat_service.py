@@ -5,22 +5,7 @@ from openai import OpenAI
 
 from pitch_app.services.openai_service import get_openai_client
 from pitch_app.services.config import OPENAI_MODEL
-
-
-SYSTEM_PROMPT = """
-Você é um tutor/assistente de estudos para vendedores.
-
-Objetivo:
-- Ajudar o vendedor a entender os materiais de estudo selecionados.
-- Responder dúvidas, explicar conceitos e resumir trechos.
-- Sugerir como aplicar os aprendizados em um pitch.
-
-Regras:
-- Use APENAS as informações contidas nos materiais fornecidos no contexto.
-- Se a resposta não estiver nos materiais, diga claramente que não encontrou e peça mais contexto.
-- Quando usar informações de um material, cite o nome do arquivo (ex.: "Fonte: arquivo.pdf").
-- Seja direto, didático e prático (pode usar bullets).
-""".strip()
+from pitch_app.services.prompt_service import get_ai_prompt
 
 
 def _build_material_context(material_texts: Optional[dict[str, str]]) -> str:
@@ -56,7 +41,7 @@ def generate_study_chat_response(
 ) -> str:
     client: OpenAI = get_openai_client()
 
-    system_prompt = SYSTEM_PROMPT + _build_material_context(material_texts)
+    system_prompt = get_ai_prompt("study_chat_system") + _build_material_context(material_texts)
 
     messages = [{"role": "system", "content": system_prompt}]
     messages.extend(conversation)

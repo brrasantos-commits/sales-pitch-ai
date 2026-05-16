@@ -40,6 +40,7 @@ from pitch_app.services.session_service import (
 from pitch_app.services.email_service import send_reset_email
 from pitch_app.services.pdf_service import generate_pdf_from_result
 from pitch_app.services.secure_material_service import get_secure_material_response
+from pitch_app.services.prompt_service import ensure_ai_prompts_table
 
 from pitch_app.services.config import (
     TEMPLATES_DIR,
@@ -70,6 +71,7 @@ async def lifespan(app: FastAPI):
     
     ensure_filtros_table()
     ensure_access_profiles_tables()
+    ensure_ai_prompts_table()
 
     if os.getenv("SEED_ON_STARTUP", "").strip().lower() in {"1", "true", "yes"}:
         try:
