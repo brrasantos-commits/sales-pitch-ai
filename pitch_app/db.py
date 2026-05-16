@@ -65,17 +65,17 @@ def init_db():
                 WHERE username = 'admin'
             """), {"password": admin_password})
 
-        # Verificar se usuário mentorado já existe
+        # Verificar se vendedor já existe
         seller_exists = conn.execute(text("""
             SELECT id, password FROM users WHERE username = 'vendedor'
         """)).fetchone()
         
         if not seller_exists:
-            # Criar usuário mentorado com senha hasheada
+            # Criar vendedor com senha hasheada
             seller_password = hash_password('123456')
             conn.execute(text("""
                 INSERT INTO users (name, username, password, role, active)
-                VALUES ('Mentorado', 'vendedor', :password, 'seller', 1)
+                VALUES ('Vendedor', 'vendedor', :password, 'seller', 1)
             """), {"password": seller_password})
         elif not seller_exists.password.startswith('$2'):
             # Migrar senha em texto plano para hash
@@ -97,26 +97,11 @@ def migrate_db():
             "has_transcript": "ALTER TABLE materials ADD COLUMN has_transcript INTEGER DEFAULT 0",
             "summary_path": "ALTER TABLE materials ADD COLUMN summary_path TEXT",
             "has_ai_summary": "ALTER TABLE materials ADD COLUMN has_ai_summary INTEGER DEFAULT 0",
-            "rito": "ALTER TABLE materials ADD COLUMN rito TEXT",
-            "grau_minimo": "ALTER TABLE materials ADD COLUMN grau_minimo INTEGER DEFAULT 1",
-            "tema": "ALTER TABLE materials ADD COLUMN tema TEXT",
-            "categoria": "ALTER TABLE materials ADD COLUMN categoria TEXT",
         }
 
         for column, sql in migrations.items():
             if column not in existing:
                 db.execute(text(sql))
-
-        db.execute(text("""
-            CREATE TABLE IF NOT EXISTS grades (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL UNIQUE,
-                level INTEGER NOT NULL DEFAULT 1,
-                description TEXT,
-                active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """))
 
         # Migrações para users
         user_columns = db.execute(text("PRAGMA table_info(users)")).fetchall()
@@ -126,7 +111,6 @@ def migrate_db():
             "email": "ALTER TABLE users ADD COLUMN email TEXT",
             "reset_token": "ALTER TABLE users ADD COLUMN reset_token TEXT",
             "reset_token_expiry": "ALTER TABLE users ADD COLUMN reset_token_expiry TEXT",
-            "grade_id": "ALTER TABLE users ADD COLUMN grade_id INTEGER",
         }
 
         for column, sql in user_migrations.items():
@@ -138,8 +122,6 @@ def migrate_db():
             "CREATE INDEX IF NOT EXISTS idx_materials_active ON materials(active)",
             "CREATE INDEX IF NOT EXISTS idx_materials_industry ON materials(industry)",
             "CREATE INDEX IF NOT EXISTS idx_materials_solution ON materials(solution)",
-            "CREATE INDEX IF NOT EXISTS idx_materials_rito ON materials(rito)",
-            "CREATE INDEX IF NOT EXISTS idx_materials_grau_minimo ON materials(grau_minimo)",
             "CREATE INDEX IF NOT EXISTS idx_materials_sort ON materials(sort_order, id)",
             "CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)",
             "CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)",

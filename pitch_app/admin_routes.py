@@ -16,6 +16,12 @@ from openai import OpenAI
 from pitch_app.db import SessionLocal
 from pitch_app.services.material_processing_service import process_material_on_upload
 from pitch_app.services.config import MATERIALS_DIR, VIDEO_MATERIAL_EXTENSIONS
+from pitch_app.services.prompt_service import (
+    ensure_ai_prompts_table,
+    list_ai_prompts,
+    reset_ai_prompt,
+    update_ai_prompt,
+)
 
 
 from fastapi import Request, Form, Depends
@@ -27,8 +33,8 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 FEATURES = [
     ("estudo", "Estudo"),
     ("chat_estudo", "Chat Estudo"),
-    ("roleplay", "Simulação"),
-    ("pitch", "Prancha"),
+    ("roleplay", "Roleplay"),
+    ("pitch", "Pitch"),
     ("historico", "Minha Evolução"),
     ("painel_gestor", "Painel do Gestor"),
     ("admin_materiais", "Admin — Materiais"),
@@ -101,8 +107,7 @@ def _list_materials():
     try:
         rows = db.execute(text("""
             SELECT id, title, filename, file_type, industry, solution, description,
-                   rito, grau_minimo, tema, categoria, sort_order, active,
-                   transcript_path, has_transcript, summary_path, has_ai_summary
+                   sort_order, active, transcript_path, has_transcript, summary_path, has_ai_summary
             FROM materials
             ORDER BY sort_order ASC, id ASC
         """)).fetchall()
@@ -163,19 +168,6 @@ def _list_profiles():
         """)).fetchall()
     finally:
         db.close()
-
-
-def _list_grades():
-    db = SessionLocal()
-    try:
-        return db.execute(text("""
-            SELECT id, name, level, description, active
-            FROM grades
-            WHERE active = 1
-            ORDER BY level, name
-        """)).fetchall()
-    finally:
-        db.close()
         
 @router.post("/materials/bulk-cancel")
 async def cancel_bulk_upload(request: Request):
@@ -212,8 +204,7 @@ def admin_materials(
     try:
         query = """
             SELECT id, title, filename, file_type, industry, solution, description,
-                   rito, grau_minimo, tema, categoria, sort_order, active,
-                   transcript_path, has_transcript, summary_path, has_ai_summary
+                   sort_order, active, transcript_path, has_transcript, summary_path, has_ai_summary
             FROM materials
             WHERE 1=1
         """
@@ -324,16 +315,7 @@ def delete_user(
 
 
 from fastapi import UploadFile, File
-from typing import List, Optional
-
-
-def _parse_optional_int(value: str | None) -> int | None:
-    if value is None or value == "":
-        return None
-    try:
-        return int(value)
-    except ValueError:
-        return None
+from typing import List
 
 
 async def upload_bulk(files: List[UploadFile] = File(...)):
@@ -373,10 +355,6 @@ async def create_material(
     title: str = Form(...),
     industry: str = Form(...),
     solution: str = Form(...),
-    rito: str = Form(""),
-    grau_minimo: int = Form(1),
-    tema: str = Form(""),
-    categoria: str = Form(""),
     description: str = Form(""),
     sort_order: int = Form(0),
     active: bool = Form(False),
@@ -416,10 +394,10 @@ async def create_material(
         db.execute(
             text("""
             INSERT INTO materials
-            (title, filename, file_type, industry, solution, rito, grau_minimo, tema, categoria, description,
-             sort_order, active, transcript_path, has_transcript, summary_path, has_ai_summary)
-            VALUES (:title, :filename, :file_type, :industry, :solution, :rito, :grau_minimo, :tema, :categoria, :description,
-                    :sort_order, :active, :transcript_path, :has_transcript, :summary_path, :has_ai_summary)
+            (title, filename, file_type, industry, solution, description, sort_order, active,
+             transcript_path, has_transcript, summary_path, has_ai_summary)
+            VALUES (:title, :filename, :file_type, :industry, :solution, :description, :sort_order, :active,
+                    :transcript_path, :has_transcript, :summary_path, :has_ai_summary)
         """),
             {
                 "title": title.strip(),
@@ -427,10 +405,6 @@ async def create_material(
                 "file_type": _guess_type(filename),
                 "industry": industry.strip(),
                 "solution": solution.strip(),
-                "rito": rito.strip(),
-                "grau_minimo": grau_minimo,
-                "tema": tema.strip(),
-                "categoria": categoria.strip(),
                 "description": description.strip(),
                 "sort_order": sort_order,
                 "active": 1 if active else 0,
@@ -454,7 +428,7 @@ def edit_material_form(request: Request, material_id: int):
     try:
         row = db.execute(
             text("""
-            SELECT id, title, filename, file_type, industry, solution, rito, grau_minimo, tema, categoria, description,
+            SELECT id, title, filename, file_type, industry, solution, description,
                    sort_order, active, transcript_path, has_transcript, summary_path, has_ai_summary
             FROM materials
             WHERE id = :id
@@ -472,10 +446,6 @@ def edit_material_form(request: Request, material_id: int):
             "file_type": row.file_type,
             "industry": row.industry,
             "solution": row.solution,
-            "rito": row.rito,
-            "grau_minimo": int(getattr(row, "grau_minimo", 1) or 1),
-            "tema": row.tema,
-            "categoria": row.categoria,
             "description": row.description,
             "sort_order": row.sort_order,
             "active": bool(row.active),
@@ -507,10 +477,6 @@ async def update_material(
     title: str = Form(...),
     industry: str = Form(...),
     solution: str = Form(...),
-    rito: str = Form(""),
-    grau_minimo: int = Form(1),
-    tema: str = Form(""),
-    categoria: str = Form(""),
     description: str = Form(""),
     sort_order: int = Form(0),
     active: bool = Form(False),
@@ -524,10 +490,6 @@ async def update_material(
             SET title = :title,
                 industry = :industry,
                 solution = :solution,
-                rito = :rito,
-                grau_minimo = :grau_minimo,
-                tema = :tema,
-                categoria = :categoria,
                 description = :description,
                 sort_order = :sort_order,
                 active = :active
@@ -537,10 +499,6 @@ async def update_material(
                 "title": title.strip(),
                 "industry": industry.strip(),
                 "solution": solution.strip(),
-                "rito": rito.strip(),
-                "grau_minimo": grau_minimo,
-                "tema": tema.strip(),
-                "categoria": categoria.strip(),
                 "description": description.strip(),
                 "sort_order": sort_order,
                 "active": 1 if active else 0,
@@ -670,11 +628,9 @@ def admin_users(request: Request):
     db = SessionLocal()
     try:
         rows = db.execute(text("""
-            SELECT u.id, u.name, u.username, u.email, u.role, u.active, u.created_at,
-                   g.name AS grade_name
-            FROM users u
-            LEFT JOIN grades g ON g.id = u.grade_id
-            ORDER BY u.role ASC, u.name ASC
+            SELECT id, name, username, email, role, active, created_at
+            FROM users
+            ORDER BY role ASC, name ASC
         """)).fetchall()
 
         users = [
@@ -684,7 +640,6 @@ def admin_users(request: Request):
                 "username": r.username,
                 "email": r.email,
                 "role": r.role,
-                "grade_name": getattr(r, "grade_name", None),
                 "active": bool(r.active),
                 "created_at": r.created_at,
             }
@@ -712,7 +667,6 @@ def new_user_form(request: Request):
             "user": None,
             "permissions": [],
             "profiles": _list_profiles(),
-            "grades": _list_grades(),
             "form_action": "/admin/users/new",
         },
     )
@@ -725,13 +679,10 @@ def create_user(
     email: str = Form(""),
     password: str = Form(...),
     role: str = Form(...),
-    grade_id: str = Form(""),
     active: bool = Form(False),
     permissions: list[str] = Form([]),
-    profile_id: str = Form(""),
+    profile_id: int = Form(None),
 ):
-    grade_id = _parse_optional_int(grade_id)
-    profile_id = _parse_optional_int(profile_id)
     _admin_only(request)
 
     role = role.strip().lower()
@@ -752,8 +703,8 @@ def create_user(
 
         db.execute(
             text("""
-            INSERT INTO users (name, username, email, password, role, grade_id, active, profile_id)
-            VALUES (:name, :username, :email, :password, :role, :grade_id, :active, :profile_id)
+            INSERT INTO users (name, username, email, password, role, active, profile_id)
+            VALUES (:name, :username, :email, :password, :role, :active, :profile_id)
         """),
             {
                 "name": name.strip(),
@@ -761,7 +712,6 @@ def create_user(
                 "email": email.strip(),
                 "password": hash_password(password.strip()),
                 "role": role,
-                "grade_id": grade_id,
                 "active": 1 if active else 0,
                 "profile_id": profile_id,
             },
@@ -791,7 +741,7 @@ def edit_user_form(request: Request, user_id: int):
     try:
         row = db.execute(
             text("""
-            SELECT id, name, username, email, role, active, profile_id, grade_id
+            SELECT id, name, username, email, role, active, profile_id
             FROM users
             WHERE id = :id
         """),
@@ -809,7 +759,6 @@ def edit_user_form(request: Request, user_id: int):
             "role": row.role,
             "active": bool(row.active),
             "profile_id": row.profile_id,
-            "grade_id": row.grade_id,
         }
 
         permissions_rows = db.execute(text("""
@@ -833,7 +782,6 @@ def edit_user_form(request: Request, user_id: int):
             "permissions": permissions,
             "form_action": f"/admin/users/{user_id}/edit",
             "profiles": _list_profiles(),
-            "grades": _list_grades(),
         },
     )
 
@@ -846,13 +794,10 @@ def update_user(
     email: str = Form(""),
     password: str = Form(""),
     role: str = Form(...),
-    grade_id: str = Form(""),
     active: bool = Form(False),
     permissions: list[str] = Form([]),
-    profile_id: str = Form(""),
+    profile_id: int = Form(None),
 ):
-    grade_id = _parse_optional_int(grade_id)
-    profile_id = _parse_optional_int(profile_id)
     _admin_only(request)
 
     role = role.strip().lower()
@@ -870,7 +815,6 @@ def update_user(
                     email = :email,
                     password = :password,
                     role = :role,
-                    grade_id = :grade_id,
                     active = :active,
                     profile_id = :profile_id
                 WHERE id = :id
@@ -882,7 +826,6 @@ def update_user(
                     "email": email.strip(),
                     "password": hash_password(password.strip()),
                     "role": role,
-                    "grade_id": grade_id,
                     "active": 1 if active else 0,
                     "profile_id": profile_id,
                 },
@@ -895,7 +838,6 @@ def update_user(
                     username = :username,
                     email = :email,
                     role = :role,
-                    grade_id = :grade_id,
                     active = :active,
                     profile_id = :profile_id
                 WHERE id = :id
@@ -906,7 +848,6 @@ def update_user(
                     "username": username.strip(),
                     "email": email.strip(),
                     "role": role,
-                    "grade_id": grade_id,
                     "active": 1 if active else 0,
                     "profile_id": profile_id,
                 },
@@ -1410,6 +1351,45 @@ def delete_filtro(
         db.close()
 
     return RedirectResponse(url="/admin/filtros", status_code=303)
+
+
+@router.get("/prompts", response_class=HTMLResponse)
+def admin_prompts(request: Request, saved: str = "", reset: str = ""):
+    _admin_only(request)
+    prompts = list_ai_prompts()
+
+    return request.app.state.templates.TemplateResponse(
+        request,
+        "admin_prompts.html",
+        {
+            "request": request,
+            "prompts": prompts,
+            "saved": saved == "1",
+            "reset": reset == "1",
+        },
+    )
+
+
+@router.post("/prompts/{prompt_key}/edit")
+def update_prompt(
+    request: Request,
+    prompt_key: str,
+    content: str = Form(...),
+):
+    _admin_only(request)
+    ensure_ai_prompts_table()
+    update_ai_prompt(prompt_key, content)
+
+    return RedirectResponse(url="/admin/prompts?saved=1", status_code=303)
+
+
+@router.post("/prompts/{prompt_key}/reset")
+def reset_prompt(request: Request, prompt_key: str):
+    _admin_only(request)
+    ensure_ai_prompts_table()
+    reset_ai_prompt(prompt_key)
+
+    return RedirectResponse(url="/admin/prompts?reset=1", status_code=303)
 
 @router.post("/materials/bulk-discard")
 async def discard_bulk_materials(request: Request):

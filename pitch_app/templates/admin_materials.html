@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Materiais Admin | Mentoria Maçônica AI{% endblock %}
+{% block title %}Materiais Admin | Sales Pitch AI{% endblock %}
 
 {% block content %}
 <section class="page-card">
   <div class="hero-block">
     <div>
       <h2>Gestão de materiais</h2>
-      <p>Gerencie o catálogo de conteúdos exibidos nas jornadas de estudo e prancha, mantendo a organização por linha de estudo, tipo, ordem e status de processamento.</p>
+      <p>Gerencie o catálogo de conteúdos exibidos nas jornadas de estudo e pitch, mantendo a organização por indústria, solução, ordem e status de processamento.</p>
     </div>
     <div class="hero-pill">Administração de conteúdo</div>
   </div>
@@ -30,7 +30,7 @@
   <form method="get" action="/admin/materials" class="panel-card" style="display:grid; gap:14px; margin-bottom:18px;">
     <div class="filter-grid">
       <div>
-        <label for="industry">Linha de estudo</label>
+        <label for="industry">Indústria</label>
         <select id="industry" name="industry">
           <option value="all">Todas</option>
           {% for option in industry_options %}
@@ -40,7 +40,7 @@
       </div>
 
       <div>
-        <label for="solution">Tipo de conteúdo</label>
+        <label for="solution">Solução</label>
         <select id="solution" name="solution">
           <option value="all">Todas</option>
           {% for option in solution_options %}
@@ -118,8 +118,8 @@
 
         <div>
           <h3 style="margin:0 0 8px; font-size:20px;">{{ material.title }}</h3>
-          <p class="meta-note"><strong>Linha de estudo:</strong> {{ material.industry }}</p>
-          <p class="meta-note"><strong>Tipo de conteúdo:</strong> {{ material.solution }}</p>
+          <p class="meta-note"><strong>Indústria:</strong> {{ material.industry }}</p>
+          <p class="meta-note"><strong>Solução:</strong> {{ material.solution }}</p>
           <p class="file-name">Arquivo: {{ material.filename }}</p>
         </div>
 
@@ -167,7 +167,7 @@
           {% if is_video %}
             <p style="margin:12px 0 0; color:#475569; line-height:1.6;">
               {% if material.has_transcript and material.has_ai_summary %}
-                Este vídeo já está pronto para ser usado como material base enriquecido na análise da prancha.
+                Este vídeo já está pronto para ser usado como material base enriquecido na análise do pitch.
               {% elif material.has_transcript and not material.has_ai_summary %}
                 A transcrição foi gerada, mas o resumo com IA ainda não está disponível.
               {% elif not material.has_transcript and material.has_ai_summary %}
@@ -183,24 +183,10 @@
           {% endif %}
         </div>
 
-        {% if material.description or material.rito or material.tema or material.categoria %}
+        {% if material.description %}
           <div class="card-note">
-            {% if material.description %}
-              <strong>Descrição</strong>
-              <p style="margin:8px 0 0;">{{ material.description }}</p>
-            {% endif %}
-            <div style="margin-top:10px; display:grid; gap:6px;">
-              {% if material.rito %}
-                <span class="meta-note"><strong>Rito:</strong> {{ material.rito }}</span>
-              {% endif %}
-              {% if material.tema %}
-                <span class="meta-note"><strong>Tema:</strong> {{ material.tema }}</span>
-              {% endif %}
-              {% if material.categoria %}
-                <span class="meta-note"><strong>Categoria:</strong> {{ material.categoria }}</span>
-              {% endif %}
-              <span class="meta-note"><strong>Grau mínimo:</strong> {{ material.grau_minimo }}</span>
-            </div>
+            <strong>Descrição</strong>
+            <p style="margin:8px 0 0;">{{ material.description }}</p>
           </div>
         {% endif %}
 

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}{% if material %}Editar Material{% else %}Novo Material{% endif %} | Mentoria Maçônica AI{% endblock %}
+{% block title %}{% if material %}Editar Material{% else %}Novo Material{% endif %} | Sales Pitch AI{% endblock %}
 
 {% block content %}
 <section class="page-card">
   <div class="hero-block">
     <div>
       <h2>{% if material %}Editar material{% else %}Novo material{% endif %}</h2>
-      <p>Preencha os metadados com clareza para facilitar a filtragem, a recomendação e a seleção dos materiais nas etapas de estudo e prancha.</p>
+      <p>Preencha os metadados com clareza para facilitar a filtragem, a recomendação e a seleção dos materiais nas etapas de estudo e pitch.</p>
     </div>
     <div class="hero-pill">{% if material %}Edição{% else %}Cadastro{% endif %}</div>
   </div>
@@ -23,14 +23,14 @@
             name="title"
             value="{{ material.title if material else '' }}"
             required
-            placeholder="Ex.: Prancha sobre Simbologia"
+            placeholder="Ex.: Battlecard Varejo HCI"
           >
         </div>
       </div>
 
       <div class="form-row">
         <div>
-          <label for="industry">Linha de estudo</label>
+          <label for="industry">Indústria</label>
           <select id="industry" name="industry" required>
             <option value="" disabled {% if not material %}selected{% endif %}>Selecione</option>
             {% for option in industry_options %}
@@ -40,61 +40,13 @@
         </div>
 
         <div>
-          <label for="solution">Tipo de conteúdo</label>
+          <label for="solution">Solução</label>
           <select id="solution" name="solution" required>
             <option value="" disabled {% if not material %}selected{% endif %}>Selecione</option>
             {% for option in solution_options %}
               <option value="{{ option }}" {% if material and material.solution == option %}selected{% endif %}>{{ option }}</option>
             {% endfor %}
           </select>
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div>
-          <label for="rito">Rito</label>
-          <input
-            type="text"
-            id="rito"
-            name="rito"
-            value="{{ material.rito if material else '' }}"
-            placeholder="Ex.: Rito Escocês"
-          >
-        </div>
-
-        <div>
-          <label for="grau_minimo">Grau mínimo</label>
-          <input
-            type="number"
-            id="grau_minimo"
-            name="grau_minimo"
-            value="{{ material.grau_minimo if material else 1 }}"
-            min="1"
-          >
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div>
-          <label for="tema">Tema</label>
-          <input
-            type="text"
-            id="tema"
-            name="tema"
-            value="{{ material.tema if material else '' }}"
-            placeholder="Ex.: Simbologia"
-          >
-        </div>
-
-        <div>
-          <label for="categoria">Categoria</label>
-          <input
-            type="text"
-            id="categoria"
-            name="categoria"
-            value="{{ material.categoria if material else '' }}"
-            placeholder="Ex.: Ritualística"
-          >
         </div>
       </div>
 
@@ -156,7 +108,7 @@
       <div>
         <h3 style="margin:0 0 8px; font-size:20px;">Orientações de cadastro</h3>
         <p class="meta-note">
-          Um bom cadastro facilita a busca, a recomendação e a escolha dos materiais corretos durante a preparação da prancha.
+          Um bom cadastro facilita a busca, a recomendação e a escolha dos materiais corretos durante a preparação do pitch.
         </p>
       </div>
 
@@ -164,8 +116,8 @@
         <strong>Boas práticas</strong>
         <ul style="margin:10px 0 0; padding-left:18px; color:#475569; line-height:1.7;">
           <li>Use títulos claros e objetivos</li>
-          <li>Classifique corretamente linha de estudo e tipo de conteúdo</li>
-          <li>Escreva descrições que ajudem o mentorado a entender o propósito do material</li>
+          <li>Classifique corretamente indústria e solução</li>
+          <li>Escreva descrições que ajudem o vendedor a entender o propósito do material</li>
           <li>Use a ordem para destacar materiais mais importantes</li>
           <li>Mantenha ativo apenas o que realmente deve aparecer para o usuário</li>
         </ul>
@@ -174,7 +126,7 @@
       <div class="card-note">
         <strong>Impacto no app</strong>
         <p style="margin:8px 0 0;">
-          Os metadados definidos aqui influenciam diretamente os filtros da tela de estudo e a experiência de seleção de materiais na tela de prancha.
+          Os metadados definidos aqui influenciam diretamente os filtros da tela de estudo e a experiência de seleção de materiais na tela de pitch.
         </p>
       </div>
     </div>

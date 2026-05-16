@@ -40,6 +40,7 @@ from pitch_app.services.session_service import (
 from pitch_app.services.email_service import send_reset_email
 from pitch_app.services.pdf_service import generate_pdf_from_result
 from pitch_app.services.secure_material_service import get_secure_material_response
+from pitch_app.services.prompt_service import ensure_ai_prompts_table
 
 from pitch_app.services.config import (
     TEMPLATES_DIR,
@@ -70,7 +71,7 @@ async def lifespan(app: FastAPI):
     
     ensure_filtros_table()
     ensure_access_profiles_tables()
-    ensure_grades_table()
+    ensure_ai_prompts_table()
 
     if os.getenv("SEED_ON_STARTUP", "").strip().lower() in {"1", "true", "yes"}:
         try:
@@ -85,7 +86,7 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down application...")
 
 app = FastAPI(
-    title="Mentoria Maçônica AI",
+    title="Sales Pitch AI V4",
     lifespan=lifespan
 )
 
@@ -141,17 +142,17 @@ def ensure_filtros_table():
         count = db.execute(text("SELECT COUNT(*) FROM filtros_config")).scalar()
         if count == 0:
             initial_filters = [
-                ("industria", "Aprendiz"),
-                ("industria", "Companheiro"),
-                ("industria", "Mestre"),
-                ("industria", "História"),
-                ("industria", "Simbologia"),
-                ("industria", "Ética"),
-                ("solucao", "Prancha"),
-                ("solucao", "Instrução"),
-                ("solucao", "Ritualística"),
-                ("solucao", "Biblioteca"),
-                ("solucao", "Reflexão"),
+                ("industria", "Varejo"),
+                ("industria", "Saúde"),
+                ("industria", "Finanças"),
+                ("industria", "Tecnologia"),
+                ("industria", "Educação"),
+                ("industria", "Indústria"),
+                ("solucao", "Software"),
+                ("solucao", "Serviços"),
+                ("solucao", "Consultoria"),
+                ("solucao", "Hardware"),
+                ("solucao", "Plataforma"),
             ]
             for tipo, valor in initial_filters:
                 db.execute(text("""
@@ -184,25 +185,7 @@ def get_filter_options_db(db: Session):
         elif tipo == "solucao":
             solucoes.append(valor)
 
-    # Add ritual metadata filters from materials if available
-    extra = db.execute(text("""
-        SELECT DISTINCT rito, tema, categoria
-        FROM materials
-        WHERE active = 1
-        ORDER BY rito, tema, categoria
-    """)).fetchall()
-
-    ritos = sorted({row.rito for row in extra if row.rito})
-    temas = sorted({row.tema for row in extra if row.tema})
-    categorias = sorted({row.categoria for row in extra if row.categoria})
-
-    return {
-        "industria": industrias,
-        "solucao": solucoes,
-        "rito": ritos,
-        "tema": temas,
-        "categoria": categorias,
-    }
+    return industrias, solucoes
 
 def _login_redirect():
     """Helper to redirect to login page"""
@@ -293,30 +276,6 @@ def ensure_access_profiles_tables():
         db.close()
 
 
-def ensure_grades_table():
-    db = SessionLocal()
-    try:
-        db.execute(text("""
-            CREATE TABLE IF NOT EXISTS grades (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(100) NOT NULL UNIQUE,
-                level INTEGER NOT NULL DEFAULT 1,
-                description TEXT,
-                active INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        """))
-
-        try:
-            db.execute(text("ALTER TABLE users ADD COLUMN grade_id INTEGER"))
-        except Exception:
-            pass
-
-        db.commit()
-    finally:
-        db.close()
-
-
 def seed_initial_data():
     """Idempotent seed for CI/dev environments.
 
@@ -333,7 +292,7 @@ def seed_initial_data():
                 VALUES (:name, :description, 1)
                 """
             ),
-            {"name": "Mentorado", "description": "Perfil padrão de mentorado"},
+            {"name": "Vendedor", "description": "Perfil padrão de vendedor"},
         )
         db.execute(
             text(
@@ -346,7 +305,7 @@ def seed_initial_data():
         )
 
         seller_profile_id = db.execute(
-            text("SELECT id FROM access_profiles WHERE name = 'Mentorado'")
+            text("SELECT id FROM access_profiles WHERE name = 'Vendedor'")
         ).scalar()
         manager_profile_id = db.execute(
             text("SELECT id FROM access_profiles WHERE name = 'Gestor'")
@@ -379,23 +338,6 @@ def seed_initial_data():
                 {"profile_id": manager_profile_id, "feature": feature},
             )
 
-        # Seed grade hierarchy
-        grade_items = [
-            ("Aprendiz", 1, "Grau inicial de estudo e instrução."),
-            ("Companheiro", 2, "Grau de aprofundamento simbólico e técnico."),
-            ("Mestre", 3, "Grau avançado de liderança e filosofia."),
-        ]
-        for name, level, description in grade_items:
-            db.execute(
-                text(
-                    """
-                    INSERT OR IGNORE INTO grades (name, level, description, active)
-                    VALUES (:name, :level, :description, 1)
-                    """
-                ),
-                {"name": name, "level": level, "description": description},
-            )
-
         # Attach profiles to default users
         db.execute(
             text(
@@ -406,16 +348,6 @@ def seed_initial_data():
                 """
             ),
             {"profile_id": seller_profile_id},
-        )
-
-        db.execute(
-            text(
-                """
-                UPDATE users
-                SET grade_id = (SELECT id FROM grades WHERE name = 'Aprendiz')
-                WHERE username = 'vendedor' AND (grade_id IS NULL OR grade_id = '')
-                """
-            )
         )
 
         # Ensure a manager user exists (optional; useful for E2E)
@@ -434,9 +366,8 @@ def seed_initial_data():
             db.execute(
                 text(
                     """
-                    INSERT INTO users (name, username, password, role, active, profile_id, grade_id)
-                    VALUES (:name, :username, :password, 'seller', 1, :profile_id, 
-                            (SELECT id FROM grades WHERE name = 'Companheiro'))
+                    INSERT INTO users (name, username, password, role, active, profile_id)
+                    VALUES (:name, :username, :password, 'seller', 1, :profile_id)
                     """
                 ),
                 {
@@ -451,7 +382,7 @@ def seed_initial_data():
                 text(
                     """
                     UPDATE users
-                    SET profile_id = :profile_id, active = 1, grade_id = (SELECT id FROM grades WHERE name = 'Companheiro')
+                    SET profile_id = :profile_id, active = 1
                     WHERE username = :u
                     """
                 ),
@@ -539,7 +470,7 @@ def seed_initial_data():
 def _validate_video_upload(video: UploadFile, request: Request):
     """Validate video upload with optimized size check"""
     if not video or not video.filename:
-        raise HTTPException(status_code=400, detail="Vídeo da prancha é obrigatório.")
+        raise HTTPException(status_code=400, detail="Vídeo do pitch é obrigatório.")
 
     # Check content-length header first (more efficient)
     content_length = request.headers.get("content-length")
@@ -608,7 +539,7 @@ def _run_analysis_job(
     video_bytes: bytes,
     materials: list[str],
 ):
-    """Background task to run presentation analysis"""
+    """Background task to run pitch analysis"""
     try:
         fake_upload = SimpleNamespace(
             filename=video_filename,
@@ -661,7 +592,7 @@ def _run_analysis_job(
                 "Libere espaço no volume (/app/data) ou aumente o volume no Railway."
             )
         else:
-            message = "Erro interno ao analisar a prancha. Tente novamente."
+            message = "Erro interno ao analisar o pitch. Tente novamente."
 
         update_job(
             job_id,
@@ -907,9 +838,6 @@ async def login(
 
     if user:
         set_user_session(request, user["id"], user["name"], user["role"])
-        request.session["user_grade_id"] = user.get("grade_id")
-        request.session["user_grade_name"] = user.get("grade_name")
-        request.session["user_grade_level"] = user.get("grade_level")
 
         permissions_rows = db.execute(text("""
             SELECT app.feature
@@ -1046,9 +974,6 @@ async def study_index(
     request: Request,
     industry: str = "all",
     solution: str = "all",
-    rito: str = "all",
-    tema: str = "all",
-    categoria: str = "all",
     db: Session = Depends(get_db),
 ):
     if not is_user_logged(request):
@@ -1057,30 +982,18 @@ async def study_index(
     if not user_has_permission(request, "estudo"):
         raise HTTPException(status_code=403, detail="Acesso não autorizado")
 
-    user_grade_level = request.session.get("user_grade_level")
-    materials = list_materials(
-        db,
-        industry=industry,
-        solution=solution,
-        rito=rito,
-        tema=tema,
-        categoria=categoria,
-        user_grade_level=user_grade_level,
-    )
-    filters = get_filter_options_db(db)
+    materials = list_materials(db, industry=industry, solution=solution)
+    industry_options, solution_options = get_filter_options_db(db)
 
     return templates.TemplateResponse(
         request,
         "index.html",
         {
-            "request": request,
             "materials": materials,
-            "filters": filters,
+            "industry_options": industry_options,
+            "solution_options": solution_options,
             "current_industry": industry,
             "current_solution": solution,
-            "current_rito": rito,
-            "current_tema": tema,
-            "current_categoria": categoria,
             "selected_materials": get_selected_materials(request),
         },
     )
@@ -1100,10 +1013,6 @@ async def study_material(
 
     if not material:
         raise HTTPException(status_code=404, detail="Material não encontrado")
-
-    user_grade_level = request.session.get("user_grade_level")
-    if user_grade_level is not None and material.get("grau_minimo", 1) > user_grade_level:
-        raise HTTPException(status_code=403, detail="Acesso ao material restrito ao seu grau.")
 
     add_selected_material(request, material["filename"])
 
@@ -1125,7 +1034,7 @@ async def study_material(
 
 @app.post("/estudo/concluir")
 async def study_complete(request: Request):
-    """Complete study phase and redirect to presentation submission"""
+    """Complete study phase and redirect to pitch"""
     if not is_user_logged(request):
         return _login_redirect()
 
@@ -1144,9 +1053,8 @@ async def pitch_page(
     if not user_has_permission(request, "pitch"):
         raise HTTPException(status_code=403, detail="Acesso não autorizado")
 
-    user_grade_level = request.session.get("user_grade_level")
-    materials = list_materials(db, user_grade_level=user_grade_level)
-    filters = get_filter_options_db(db)
+    materials = list_materials(db)
+    industry_options, solution_options = get_filter_options_db(db)
 
     return templates.TemplateResponse(
          request,
@@ -1154,7 +1062,8 @@ async def pitch_page(
         {
             "request": request,
             "materials": materials,
-            "filters": filters,
+            "industry_options": industry_options,
+            "solution_options": solution_options,
             "selected_materials": get_selected_materials(request),
         },
     )
@@ -1342,7 +1251,7 @@ async def analyze(
     video: UploadFile = File(...),
     materials: list[str] = Form(...),
 ):
-    """Submit presentation for analysis"""
+    """Submit pitch for analysis"""
     if not is_user_logged(request):
         return _login_redirect()
 
@@ -1352,7 +1261,7 @@ async def analyze(
     seller_name = (request.session.get("user_name") or "").strip()
 
     if not seller_name:
-        seller_name = "Mentorado"
+        seller_name = "Vendedor"
 
     video_bytes = await video.read()
     video_filename = video.filename or "video.mp4"
@@ -1473,7 +1382,7 @@ async def download_result_pdf(request: Request, job_id: str):
         )
 
         # Return PDF as download
-        filename = f"resultado_prancha_{result.get('seller_name', 'mentorado')}_{job_id[:8]}.pdf"
+        filename = f"resultado_pitch_{result.get('seller_name', 'vendedor')}_{job_id[:8]}.pdf"
         
         return Response(
             content=pdf_bytes,

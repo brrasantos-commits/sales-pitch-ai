@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}Mentoria Maçônica AI{% endblock %}</title>
+  <title>{% block title %}Sales Pitch AI{% endblock %}</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <style>
     :root {
@@ -12,9 +12,9 @@
       --card: #ffffff;
       --text: #1f2937;
       --muted: #6b7280;
-      --primary: #8a5a2b;
-      --primary-strong: #5f3b18;
-      --primary-soft: #fff7ed;
+      --primary: #4f46e5;
+      --primary-strong: #4338ca;
+      --primary-soft: #eef2ff;
       --line: #e5e7eb;
       --danger: #dc2626;
       --shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
@@ -29,7 +29,9 @@
       margin: 0;
       font-family: Inter, Arial, sans-serif;
       color: var(--text);
-      background: linear-gradient(180deg, #fdfcf9 0%, var(--bg) 100%);
+      background:
+        radial-gradient(circle at top left, rgba(79, 70, 229, .08), transparent 28%),
+        linear-gradient(180deg, #f9fbff 0%, var(--bg) 100%);
     }
 
     .container {
@@ -551,8 +553,8 @@
   <main class="container">
     <header class="site-header">
       <div class="site-brand">
-        <h1>Mentoria Maçônica AI</h1>
-        <p>Estudo orientado, simulações de instrução, avaliação de pranchas e gestão do acervo.</p>
+        <h1>Sales Pitch AI</h1>
+        <p>Treinamento comercial, estudo de materiais, envio de pitch e gestão administrativa.</p>
       </div>
 
       
@@ -574,11 +576,11 @@
 
 
         <a class="nav-link {% if request.url.path.startswith('/roleplay') %}active{% endif %}" href="/roleplay">
-        Simulação
+        Roleplay
         </a>
 
         <a class="nav-link {% if request.url.path.startswith('/pitch') %}active{% endif %}" href="/pitch">
-        Prancha
+        Pitch
         </a>
 
         <a class="nav-link {% if request.url.path.startswith('/vendedor/historico') %}active{% endif %}"
@@ -621,6 +623,9 @@
             {% endif %}
 
             {% if request.session.get("user_role") == "admin" %}
+            <a class="{% if request.url.path.startswith('/admin/prompts') %}active{% endif %}"
+              href="/admin/prompts">🤖 Prompts de IA</a>
+
             <a class="{% if request.url.path.startswith('/admin/dashboard') %}active{% endif %}"
               href="/admin/dashboard">📊 Dashboard</a>
             {% endif %}

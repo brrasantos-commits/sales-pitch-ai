@@ -7,7 +7,7 @@
   <div class="hero-block">
     <div>
       <h2>Painel do Gestor</h2>
-      <p>Acompanhe a evolução dos mentorados e identifique oportunidades de orientação.</p>
+      <p>Acompanhe a evolução dos vendedores e identifique oportunidades de coaching.</p>
     </div>
     <div class="hero-pill">Gestão de performance</div>
   </div>
@@ -16,7 +16,7 @@
     <div class="panel-card" style="margin-bottom:18px;">
       <div class="top-toolbar" style="margin-bottom:12px;">
         <div>
-          <strong>Ranking de mentorados (maior média para menor média)</strong>
+          <strong>Ranking de vendedores (maior média → menor média)</strong>
           <div class="hint">Ordenação por média e, em caso de empate, por número de avaliações.</div>
         </div>
       </div>
@@ -25,7 +25,7 @@
         <thead>
           <tr>
             <th style="text-align:left; width:60px;">#</th>
-            <th style="text-align:left;">Mentorado</th>
+            <th style="text-align:left;">Vendedor</th>
             <th style="text-align:left;">Avaliações</th>
             <th style="text-align:left;">Média</th>
             <th style="text-align:left;">Melhor nota</th>
@@ -51,15 +51,15 @@
     <div class="panel-card" style="margin-bottom:18px;">
       <div class="top-toolbar" style="margin-bottom:12px;">
         <div>
-          <strong>Quebra geral por tipo de conteúdo</strong>
-          <div class="hint">A média é calculada com base nas avaliações que utilizaram ao menos 1 material daquele tipo.</div>
+          <strong>Quebra geral por tipo de solução</strong>
+          <div class="hint">A média é calculada com base nas avaliações que utilizaram ao menos 1 material daquela solução.</div>
         </div>
       </div>
 
       <table style="width:100%; border-collapse:collapse;">
         <thead>
           <tr>
-            <th style="text-align:left;">Tipo</th>
+            <th style="text-align:left;">Solução</th>
             <th style="text-align:left;">Avaliações</th>
             <th style="text-align:left;">Média</th>
           </tr>
@@ -81,8 +81,8 @@
     <div class="panel-card">
       <div class="top-toolbar" style="margin-bottom:12px;">
         <div>
-          <strong>Detalhe por mentorado (média por tipo)</strong>
-          <div class="hint">Clique para expandir e ver a quebra por tipo para cada mentorado.</div>
+          <strong>Detalhe por vendedor (média por solução)</strong>
+          <div class="hint">Clique para expandir e ver a quebra por solução para cada vendedor.</div>
         </div>
       </div>
 
@@ -95,7 +95,7 @@
             <table style="width:100%; border-collapse:collapse;">
               <thead>
                 <tr>
-                  <th style="text-align:left;">Tipo</th>
+                  <th style="text-align:left;">Solução</th>
                   <th style="text-align:left;">Avaliações</th>
                   <th style="text-align:left;">Média</th>
                 </tr>
@@ -112,7 +112,7 @@
             </table>
           </div>
           {% else %}
-            <div class="hint" style="margin-top:10px;">Sem dados suficientes para calcular a quebra por tipo.</div>
+            <div class="hint" style="margin-top:10px;">Sem dados suficientes para calcular a quebra por solução.</div>
           {% endif %}
         </details>
       {% endfor %}

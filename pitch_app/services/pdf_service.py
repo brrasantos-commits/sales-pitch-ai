@@ -1,9 +1,10 @@
 """
-PDF generation service for presentation analysis results
+PDF generation service for pitch analysis results
 """
 import logging
 from io import BytesIO
 from typing import Dict, Any, List
+from weasyprint import HTML, CSS
 from jinja2 import Template
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ def generate_pdf_from_result(
     materials_context: List[Any]
 ) -> bytes:
     """
-    Generate PDF from presentation analysis result
+    Generate PDF from pitch analysis result
     
     Returns PDF as bytes
     """
@@ -40,10 +41,6 @@ def generate_pdf_from_result(
             materials_context=materials_context
         )
         
-        # WeasyPrint depends on native libraries on Windows, so import it only
-        # when PDF generation is requested instead of blocking app startup.
-        from weasyprint import HTML
-
         # Generate PDF from HTML
         pdf_bytes = HTML(string=html_content).write_pdf()
         
@@ -302,13 +299,13 @@ def _generate_html(
     </head>
     <body>
       <div class="header">
-        <h1>Resultado da Análise de Prancha</h1>
+        <h1>Resultado da Análise de Pitch</h1>
         <p class="subtitle">Feedback detalhado com base na transcrição e materiais selecionados</p>
       </div>
       
       <div class="info-grid">
         <div class="info-box">
-          <div class="info-label">Mentorado</div>
+          <div class="info-label">Vendedor</div>
           <div class="info-value">{{ seller_name }}</div>
         </div>
         <div class="info-box">
@@ -373,15 +370,15 @@ def _generate_html(
       
       <h2>Critérios Avançados</h2>
       {% for key, label in [
-        ('elevator_pitch_missao_critica', 'Abertura e delimitação do tema'),
-        ('dores_da_industria', 'Contexto histórico e doutrinário'),
-        ('proposta_valor_diferenciais', 'Leitura simbólica e conceitual'),
-        ('features_principais', 'Pontos essenciais do material'),
-        ('servicos_tecnocomp', 'Aplicação ética e prática'),
-        ('referencias_cases', 'Referências e exemplos'),
-        ('porque_tecnocomp', 'Coerência com a jornada do grau'),
-        ('proximos_passos', 'Próximos estudos'),
-        ('frases_fechamento', 'Síntese final')
+        ('elevator_pitch_missao_critica', 'Elevator pitch orientado à missão crítica'),
+        ('dores_da_industria', 'Dores da indústria'),
+        ('proposta_valor_diferenciais', 'Proposta de valor e diferenciais'),
+        ('features_principais', 'Features principais'),
+        ('servicos_tecnocomp', 'Serviços Tecnocomp'),
+        ('referencias_cases', 'Referências e cases'),
+        ('porque_tecnocomp', 'Porque Tecnocomp'),
+        ('proximos_passos', 'Próximos passos'),
+        ('frases_fechamento', 'Frases de fechamento')
       ] %}
         {% set item = adv.get(key, {}) %}
         <div class="criterion">
@@ -473,14 +470,14 @@ def _generate_html(
       
       <div class="page-break"></div>
       
-      <h2>Prancha Sugerida</h2>
+      <h2>Pitch Sugerido</h2>
       <pre>{{ evaluation.get('improved_pitch', '') }}</pre>
       
       <h2>Transcrição Original</h2>
       <pre>{{ transcript }}</pre>
       
       <div class="footer">
-        <p>Gerado por Mentoria Maçônica AI - {{ job_id }}</p>
+        <p>Gerado por Sales Pitch AI - {{ job_id }}</p>
       </div>
     </body>
     </html>

@@ -2,7 +2,7 @@
 
 {% block content %}
 <section class="page-card" style="max-width:800px; margin:auto;">
-  <h2>Simulação de instrução com IA</h2>
+  <h2>Roleplay com IA</h2>
 
   <div id="warning" style="
     display:none;
@@ -14,7 +14,7 @@
     margin-bottom:10px;
     font-size:14px;
   ">
-    Selecione materiais de estudo antes de iniciar a simulação.
+    ⚠️ Selecione materiais de estudo antes de iniciar o roleplay.
   </div>
 
   <div
@@ -125,13 +125,13 @@ const chat = document.getElementById("chat");
 const form = document.getElementById("chatForm");
 addMessage(
   "assistant",
-  "Olá! Eu serei seu mentor nesta simulação. Vou fazer perguntas sobre os materiais selecionados, pedir definições, conexões simbólicas e exemplos práticos. Seu objetivo é responder com clareza, respeito à tradição e domínio do conteúdo. Quando estiver pronto, comece sua explicação."
+  "Olá! Eu serei o cliente nesta simulação de roleplay. Vou reagir como um cliente real: posso questionar preço, valor, prioridade, concorrência e pedir mais clareza. Seu objetivo é conduzir a conversa, defender a proposta e tratar objeções. Quando estiver pronto, comece seu pitch."
 );
 
 function addMessage(role, text) {
   const div = document.createElement("div");
   div.style.margin = "8px 0";
-  div.innerHTML = "<b>" + (role === "user" ? "Você" : "Mentor") + ":</b> " + text;
+  div.innerHTML = "<b>" + (role === "user" ? "Você" : "Cliente") + ":</b> " + text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
@@ -176,7 +176,7 @@ const resultDiv = document.getElementById("scoreResult");
 evaluateBtn.addEventListener("click", async function () {
 
   if (!history.length) {
-    alert("Faça a simulação antes de avaliar.");
+    alert("Faça o roleplay antes de avaliar.");
     return;
   }
 
@@ -198,10 +198,10 @@ evaluateBtn.addEventListener("click", async function () {
       <h3>Score Geral: ${data.score}</h3>
 
       <p><strong>Clareza:</strong> ${data.clarity}</p>
-      <p><strong>Profundidade:</strong> ${data.value}</p>
+      <p><strong>Valor:</strong> ${data.value}</p>
       <p><strong>Domínio:</strong> ${data.knowledge}</p>
-      <p><strong>Diálogo:</strong> ${data.objections}</p>
-      <p><strong>Síntese:</strong> ${data.closing}</p>
+      <p><strong>Objeções:</strong> ${data.objections}</p>
+      <p><strong>Fechamento:</strong> ${data.closing}</p>
 
       <h4>Pontos fortes</h4>
       <ul>${data.strengths.map(s => `<li>${s}</li>`).join("")}</ul>

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Prancha | Mentoria Maçônica AI{% endblock %}
+{% block title %}Pitch | Sales Pitch AI{% endblock %}
 
 {% block content %}
 <section class="page-card">
   <div class="hero-block">
     <div>
-      <h2>Etapa 2 - Envio da prancha</h2>
-      <p>Revise os materiais estudados, filtre o que faz sentido para esta apresentação e envie o vídeo para análise.</p>
+      <h2>Etapa 2 — Envio do pitch</h2>
+      <p>Revise os materiais estudados, filtre o que faz sentido para este pitch e envie o vídeo para análise.</p>
     </div>
     <div class="hero-pill">Seleção centralizada na sessão</div>
   </div>
@@ -34,18 +34,18 @@
       ">
         <div class="form-row">
       <div>
-        <label for="seller_name_display">Mentorado (usuário logado)</label>
+        <label for="seller_name_display">Vendedor (usuário logado)</label>
         <input
           type="text"
           id="seller_name_display"
           value="{{ request.session.get('user_name', '') }}"
           readonly
         >
-        <div class="hint" style="margin-top:6px;">A análise será salva automaticamente no seu usuário.</div>
+        <div class="hint" style="margin-top:6px;">O pitch será salvo automaticamente no seu usuário.</div>
       </div>
 
       <div>
-        <label for="video">Vídeo da prancha ou apresentação</label>
+        <label for="video">Vídeo do pitch</label>
         <input type="file" id="video" name="video" accept="video/*" required>
       </div>
     </div>
@@ -80,20 +80,20 @@
 
       <div class="filter-grid" style="margin-bottom:14px;">
         <div>
-          <label for="pitchFilterIndustry">Filtrar por linha de estudo</label>
+          <label for="pitchFilterIndustry">Filtrar por indústria</label>
           <select id="pitchFilterIndustry">
             <option value="all">Todas</option>
-            {% for option in filters.industria %}
+            {% for option in industry_options %}
               <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
         </div>
 
         <div>
-          <label for="pitchFilterSolution">Filtrar por tipo de conteúdo</label>
+          <label for="pitchFilterSolution">Filtrar por solução</label>
           <select id="pitchFilterSolution">
             <option value="all">Todas</option>
-            {% for option in filters.solucao %}
+            {% for option in solution_options %}
               <option value="{{ option }}">{{ option }}</option>
             {% endfor %}
           </select>
@@ -101,7 +101,7 @@
 
         <div>
           <label for="pitchSearch">Buscar material</label>
-          <input type="text" id="pitchSearch" placeholder="Buscar por título, arquivo, linha de estudo ou tipo">
+          <input type="text" id="pitchSearch" placeholder="Buscar por título, arquivo, indústria ou solução">
         </div>
       </div>
 
@@ -136,7 +136,7 @@
 
           <div class="material-main">
             <strong>{{ material.title }}</strong>
-            <span>{{ material.industry or 'Sem linha de estudo' }} • {{ material.solution or 'Sem tipo' }} • {{ material.type|upper }}</span>
+            <span>{{ material.industry or 'Sem indústria' }} • {{ material.solution or 'Sem solução' }} • {{ material.type|upper }}</span>
             <small>{{ material.filename }}</small>
           </div>
         </label>

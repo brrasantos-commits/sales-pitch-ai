@@ -66,7 +66,7 @@ def evaluate_submission(
         raise AppError("seller_name inválido", status_code=400)
 
     if not video or not video.filename:
-        raise AppError("Vídeo da prancha é obrigatório", status_code=400)
+        raise AppError("Vídeo do pitch é obrigatório", status_code=400)
 
     selected_materials = _unique_keep_order(
         [_normalize_material_name(m) for m in materials]
@@ -109,7 +109,7 @@ def evaluate_submission(
             job_id,
             stage="transcription",
             progress=45,
-            message="Transcrevendo áudio da prancha",
+            message="Transcrevendo áudio do pitch",
             status="running",
         )
 

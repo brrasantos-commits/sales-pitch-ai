@@ -29,13 +29,13 @@ def _send_via_sendgrid(to_email: str, reset_link: str, api_key: str, db: Optiona
         from sendgrid import SendGridAPIClient
         from sendgrid.helpers.mail import Mail, Email, To, Content
         
-        from_email = os.getenv("SENDGRID_FROM_EMAIL", "noreply@mentoriamaconica.ai")
-        from_name = os.getenv("SENDGRID_FROM_NAME", "Mentoria Maçônica AI")
+        from_email = os.getenv("SENDGRID_FROM_EMAIL", "noreply@salespitchai.com")
+        from_name = os.getenv("SENDGRID_FROM_NAME", "Sales Pitch AI")
         
         message = Mail(
             from_email=Email(from_email, from_name),
             to_emails=To(to_email),
-            subject="Redefinição de senha - Mentoria Maçônica AI",
+            subject="Redefinição de senha - Sales Pitch AI",
             html_content=Content("text/html", f"""
 <!DOCTYPE html>
 <html>
@@ -61,12 +61,12 @@ def _send_via_sendgrid(to_email: str, reset_link: str, api_key: str, db: Optiona
 <body>
     <div class="container">
         <div class="header">
-            <h1>Mentoria Maçônica AI</h1>
+            <h1>Sales Pitch AI</h1>
         </div>
         <div class="content">
             <h2>Redefinição de Senha</h2>
             <p>Olá,</p>
-            <p>Você solicitou a redefinição de senha no Mentoria Maçônica AI.</p>
+            <p>Você solicitou a redefinição de senha no Sales Pitch AI.</p>
             <p>Clique no botão abaixo para redefinir sua senha:</p>
             <p style="text-align: center;">
                 <a href="{reset_link}" class="button">Redefinir Senha</a>
@@ -79,7 +79,7 @@ def _send_via_sendgrid(to_email: str, reset_link: str, api_key: str, db: Optiona
             <p>Se você não solicitou esta redefinição, ignore este email.</p>
         </div>
         <div class="footer">
-            <p>© 2024 Mentoria Maçônica AI - Todos os direitos reservados</p>
+            <p>© 2024 Sales Pitch AI - Todos os direitos reservados</p>
         </div>
     </div>
 </body>
@@ -125,11 +125,11 @@ def _send_via_smtp(to_email: str, reset_link: str, db: Optional[Session] = None,
         logger.info(f"Reset link for {to_email}: {reset_link}")
         return False
 
-    subject = "Redefinição de senha - Mentoria Maçônica AI"
+    subject = "Redefinição de senha - Sales Pitch AI"
     body = f"""
 Olá,
 
-Você solicitou a redefinição de senha no Mentoria Maçônica AI.
+Você solicitou a redefinição de senha no Sales Pitch AI.
 
 Clique no link abaixo para redefinir sua senha:
 
@@ -140,7 +140,7 @@ Este link expira em 1 hora.
 Se você não solicitou esta redefinição, ignore este email.
 
 ---
-Mentoria Maçônica AI
+Sales Pitch AI
 """
 
     try:

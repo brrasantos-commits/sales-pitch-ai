@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}Estudo | Mentoria Maçônica AI{% endblock %}
+{% block title %}Estudo | Sales Pitch AI{% endblock %}
 
 {% block content %}
 <section class="page-card">
   <div class="hero-block">
     <div>
-      <h2>Etapa 1 - Estudo dos materiais</h2>
-      <p>Abra os conteúdos relevantes e monte automaticamente a base de apoio que seguirá para a etapa de prancha.</p>
+      <h2>Etapa 1 — Estudo dos materiais</h2>
+      <p>Abra os materiais relevantes e monte automaticamente a base de apoio que seguirá para a etapa de pitch.</p>
     </div>
     <div class="hero-pill">Seleção salva na sessão</div>
   </div>
@@ -15,51 +15,21 @@
   <form method="get" action="/estudo" class="panel-card" style="display:grid; gap:14px; margin-bottom:18px;">
     <div class="filter-grid">
       <div>
-        <label for="industry">Linha de estudo</label>
+        <label for="industry">Indústria</label>
         <select id="industry" name="industry">
           <option value="all">Todas</option>
-          {% for option in filters.industria %}
+          {% for option in industry_options %}
             <option value="{{ option }}" {% if current_industry == option %}selected{% endif %}>{{ option }}</option>
           {% endfor %}
         </select>
       </div>
 
       <div>
-        <label for="solution">Tipo de conteúdo</label>
+        <label for="solution">Solução</label>
         <select id="solution" name="solution">
           <option value="all">Todas</option>
-          {% for option in filters.solucao %}
+          {% for option in solution_options %}
             <option value="{{ option }}" {% if current_solution == option %}selected{% endif %}>{{ option }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label for="rito">Rito</label>
-        <select id="rito" name="rito">
-          <option value="all">Todos</option>
-          {% for option in filters.rito %}
-            <option value="{{ option }}" {% if current_rito == option %}selected{% endif %}>{{ option }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label for="tema">Tema</label>
-        <select id="tema" name="tema">
-          <option value="all">Todos</option>
-          {% for option in filters.tema %}
-            <option value="{{ option }}" {% if current_tema == option %}selected{% endif %}>{{ option }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div>
-        <label for="categoria">Categoria</label>
-        <select id="categoria" name="categoria">
-          <option value="all">Todas</option>
-          {% for option in filters.categoria %}
-            <option value="{{ option }}" {% if current_categoria == option %}selected{% endif %}>{{ option }}</option>
           {% endfor %}
         </select>
       </div>
@@ -72,14 +42,14 @@
       <a class="secondary-btn" href="/chat-estudo">Chat com materiais</a>
       {% endif %}
 
-      <a class="secondary-btn" href="/roleplay">Ir para Simulação</a>
+      <a class="secondary-btn" href="/roleplay">Ir para Roleplay</a>
     </div>
   </form>
 
   <div class="panel-card" style="margin-bottom: 18px;">
     <div class="top-toolbar">
       <div>
-        <strong>Materiais selecionados para a prancha</strong>
+        <strong>Materiais selecionados para o pitch</strong>
         <div class="hint">Ao abrir um material, ele é adicionado automaticamente nesta lista.</div>
       </div>
       <button type="button" class="secondary-btn" onclick="clearSelectedMaterials()">Limpar seleção</button>
@@ -93,7 +63,7 @@
       <article class="material-row" data-material-card data-filename="{{ material.filename }}">
         <div class="material-main">
           <strong>{{ material.title }}</strong>
-          <span>{{ material.industry or 'Sem linha de estudo' }} • {{ material.solution or 'Sem tipo' }} • {{ material.type|upper }}</span>
+          <span>{{ material.industry or 'Sem indústria' }} • {{ material.solution or 'Sem solução' }} • {{ material.type|upper }}</span>
           <small>{{ material.filename }}</small>
         </div>
 

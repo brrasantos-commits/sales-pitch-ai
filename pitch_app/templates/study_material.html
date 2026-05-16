@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ material.title }} | Mentoria Maçônica AI{% endblock %}
+{% block title %}{{ material.title }} | Sales Pitch AI{% endblock %}
 
 {% block content %}
 <section class="page-card">
   <div class="hero-block">
     <div>
       <h2>{{ material.title }}</h2>
-      <p>Este material foi incluído automaticamente na sua seleção de apoio para a prancha.</p>
+      <p>Este material foi incluído automaticamente na sua seleção de apoio para o pitch.</p>
     </div>
     <div class="hero-pill">Salvo em sessão</div>
   </div>
@@ -22,7 +22,7 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button type="button" class="secondary-btn" id="toggleSelectionBtn">Selecionar / desselecionar</button>
-        <a class="primary-btn" href="/roleplay">Ir para Simulação</a>
+        <a class="primary-btn" href="/roleplay">Ir para Roleplay</a>
       </div>
     </div>
 
@@ -61,7 +61,7 @@
 
     <div style="display:flex; gap:10px; flex-wrap:wrap;">
       <a class="secondary-btn" href="/estudo">Voltar para estudo</a>
-      <a class="secondary-btn" href="/roleplay">Continuar para Simulação</a>
+      <a class="secondary-btn" href="/roleplay">Continuar para Roleplay</a>
     </div>
   </div>
 </section>
@@ -74,7 +74,7 @@
     if (!box) return;
 
     if (isMaterialSelected('{{ material.filename }}')) {
-      box.innerHTML = "<strong>Selecionado:</strong> este material está salvo na sessão e será sugerido na etapa de prancha.";
+      box.innerHTML = "<strong>Selecionado:</strong> este material está salvo na sessão e será sugerido na etapa de pitch.";
     } else {
       box.innerHTML = "<strong>Não selecionado:</strong> este material não será enviado como apoio, a menos que você o selecione novamente.";
     }

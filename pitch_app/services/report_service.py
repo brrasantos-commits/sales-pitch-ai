@@ -3,7 +3,7 @@ from typing import Any
 def write_feedback_report(seller_name: str, video_filename: str, evaluation: dict[str, Any], final_score: float, status: str, material_names: list[str]) -> str:
     lines: list[str] = []
     lines.append('===== AVALIAÇÃO DO PITCH =====')
-    lines.append(f'Mentorado: {seller_name}')
+    lines.append(f'Vendedor: {seller_name}')
     lines.append(f'Arquivo: {video_filename}')
     lines.append('')
     lines.append('1. NOTAS')

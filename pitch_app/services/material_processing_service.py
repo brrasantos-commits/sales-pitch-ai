@@ -72,15 +72,15 @@ def summarize_video_material(
     transcript_text: str,
 ) -> dict[str, Any]:
     developer_prompt = """
-Você é um analista sênior de materiais para mentoria maçônica.
-Sua tarefa é resumir um material de estudo em vídeo já transcrito, transformando-o em uma base textual objetiva e reutilizável para avaliação de pranchas e apresentações de mentoria maçônica.
+Você é um analista sênior de enablement comercial.
+Sua tarefa é resumir um material de estudo em vídeo já transcrito, transformando-o em uma base textual objetiva e reutilizável para avaliação de pitches comerciais.
 
 Regras:
 - Não invente fatos.
 - Seja fiel ao conteúdo da transcrição.
 - Extraia dores, proposta de valor, diferenciais, features, serviços, casos e CTA quando existirem.
 - Se algum ponto não estiver presente, devolva lista vazia ou texto curto sem inventar.
-- O resumo deve ser útil para comparar a apresentação de um mentorado contra esse material.
+- O resumo deve ser útil para comparar o pitch de um vendedor contra esse material.
 """.strip()
 
     user_prompt = f"""
@@ -91,7 +91,7 @@ Regras:
 {transcript_text}
 
 # OBJETIVO
-Gerar uma representação estruturada e executiva do conteúdo para uso futuro na avaliação de pranchas.
+Gerar uma representação estruturada e executiva do conteúdo para uso futuro na avaliação de pitches.
 """.strip()
 
     response = client.chat.completions.create(
@@ -176,7 +176,7 @@ def _load_video_material_text(video_path: Path) -> str:
     if not transcript_path.exists():
 
         # Fallback: tenta processar automaticamente se a API estiver configurada.
-        # Isso evita que a análise da prancha falhe quando um vídeo foi importado em lote
+        # Isso evita que a análise do pitch falhe quando um vídeo foi importado em lote
         # mas ainda não teve transcrição/resumo gerados.
         api_key = os.getenv("OPENAI_API_KEY", "").strip()
         if api_key:
@@ -235,7 +235,7 @@ RESUMO EXECUTIVO:
 {list_block("FEATURES PRINCIPAIS", summary_data.get("main_features", []))}
 {list_block("SERVIÇOS MENCIONADOS", summary_data.get("services_mentioned", []))}
 {list_block("CASES E REFERÊNCIAS", summary_data.get("cases_and_references", []))}
-{list_block("PONTOS RECOMENDADOS PARA A PRANCHA", summary_data.get("recommended_pitch_points", []))}
+{list_block("PONTOS RECOMENDADOS PARA O PITCH", summary_data.get("recommended_pitch_points", []))}
 
 CTA RECOMENDADO:
 {summary_data.get("recommended_cta", "")}
