@@ -6,11 +6,16 @@ from uuid import uuid4
 _JOBS = {}
 _LOCK = Lock()
 
-def create_job(seller_name: str, video_name: str) -> str:
+def create_job(
+    seller_name: str,
+    video_name: str,
+    user_id: int | None = None,
+) -> str:
     job_id = uuid4().hex
     with _LOCK:
         _JOBS[job_id] = {
             'job_id': job_id,
+            'user_id': user_id,
             'seller_name': seller_name,
             'video_name': video_name,
             'status': 'running',
