@@ -55,7 +55,7 @@ def score_candidate_result(evaluation: dict[str, Any], material_names: list[str]
 
     final_score -= critical_gap_penalty
     final_score = max(0.0, min(5.0, round(final_score, 1)))
-    status = "PASS" if final_score >= 4.0 else "FAIL"
+    status = "PASS" if final_score >= 3.0 else "FAIL"
     return final_score, status
 
 
