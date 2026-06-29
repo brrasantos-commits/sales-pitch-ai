@@ -50,3 +50,23 @@ def test_api_requires_authentication(client, path):
     assert r.status_code in (401, 404)
     if r.status_code == 401:
         assert r.json().get("detail")
+
+
+def test_roleplay_api_requires_authentication(client):
+    r = client.post(
+        "/api/roleplay",
+        data={"message": "Atue como um cliente difícil e me teste na venda de um firewall"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert r.status_code == 401
+    assert r.json().get("detail")
+
+
+def test_roleplay_evaluate_api_requires_authentication(client):
+    r = client.post(
+        "/api/roleplay/evaluate",
+        data={"history": "[]"},
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    assert r.status_code == 401
+    assert r.json().get("detail")

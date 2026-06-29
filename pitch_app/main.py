@@ -738,6 +738,12 @@ async def roleplay_api(
     from pitch_app.services.material_processing_service import get_material_text
     from pitch_app.services.config import MATERIALS_DIR
 
+    if not is_user_logged(request):
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    if not user_has_permission(request, "roleplay"):
+        raise HTTPException(status_code=403, detail="Acesso não autorizado")
+
     selected_materials = get_selected_materials(request)
 
     material_texts = {}
@@ -814,9 +820,15 @@ async def study_chat_api(
     }
     
 @app.post("/api/roleplay/evaluate")
-async def evaluate_roleplay_api(history: str = Form(...)):
+async def evaluate_roleplay_api(request: Request, history: str = Form(...)):
 
     import json
+
+    if not is_user_logged(request):
+        raise HTTPException(status_code=401, detail="Usuário não autenticado")
+
+    if not user_has_permission(request, "roleplay"):
+        raise HTTPException(status_code=403, detail="Acesso não autorizado")
 
     conversation = json.loads(history)
 
